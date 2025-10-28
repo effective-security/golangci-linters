@@ -3,11 +3,11 @@ package main
 import (
 	"github.com/effective-security/golangci-linters/internal/jsonschema"
 	"golang.org/x/tools/go/analysis"
-	"golang.org/x/tools/go/analysis/unitchecker"
+	"golang.org/x/tools/go/analysis/multichecker"
 )
 
 func main() {
-	unitchecker.Main(
+	multichecker.Main(
 		jsonschema.NoCommas,
 	)
 }
