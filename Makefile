@@ -31,4 +31,6 @@ change_log:
 
 build:
 	echo "*** Building linters"
+	CGO_ENABLED=1 go build -o ${PROJ_ROOT}/bin/custom-linters ./cmd/custom-linters
+	CGO_ENABLED=1 go build -o ${PROJ_ROOT}/bin/custom-linters-vet ./cmd/custom-linters-vet
 	CGO_ENABLED=1 go build -buildmode=plugin -o ${PROJ_ROOT}/bin/custom-linters-v2.5.0.so ./cmd/custom-linters
