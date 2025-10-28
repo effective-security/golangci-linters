@@ -1,0 +1,27 @@
+package jsonschema
+
+type DeprecationStatus struct {
+	IsDeprecated         bool   `json:"isDeprecated" yaml:"isDeprecated" jsonschema:"title=Is Deprecated,description=Whether the package is deprecated."`
+	IsAbandoned          bool   `json:"isAbandoned" yaml:"isAbandoned" jsonschema:"title=Is Abandoned,description=Whether the package is completely abandoned by maintainers."`
+	DeprecationDate      string `json:"deprecationDate,omitempty" yaml:"deprecationDate" jsonschema:"title=Deprecation Date,description=The exact date when the package was deprecated."`
+	DeprecationReason    string `json:"deprecationReason,omitempty" yaml:"deprecationReason" jsonschema:"title=Deprecation Reason,description=The official reason for deprecation."`
+	EndOfLifeDate        string `json:"endOfLifeDate,omitempty" yaml:"endOfLifeDate" jsonschema:"title=End Of Life Date,description=The end of life date for the package."`
+	SecurityImplications string `json:"securityImplications,omitempty" yaml:"securityImplications" jsonschema:"title=Security Implications,description=Security implications of using the deprecated package, also other things."` // want "JSON Schema description fields should not contain unescaped commas"
+	MaintenanceStatus    string `json:"maintenanceStatus,omitempty" yaml:"maintenanceStatus" jsonschema:"enum=active,enum=security-only,enum=abandoned,title=Maintenance Status,description=Current maintenance status"`
+	SecurityUrgency      string `json:"securityUrgency,omitempty" yaml:"securityUrgency" jsonschema:"enum=Critical,enum=High,enum=Medium,enum=Low,title=Security Urgency,description=Urgency level for remediation"`
+	LastUpdateAge        int    `json:"lastUpdateAge,omitempty" yaml:"lastUpdateAge" jsonschema:"titltltlse=Last Update Age,description=Days since last package update."`                     // want "JSON Schema fields must use allowed keys"
+	HasSecurityPatches   bool   `json:"hasSecurityPatches" yaml:"hasSecurityPatches" jsonschema:"title=Has Security Patches,description=Whether security patches, are still being provided."` // want "JSON Schema description fields should not contain unescaped commas"
+}
+
+type Metadata struct {
+	DeprecationDate string `jsonschema:"title=Deprecation Date,description=The exact date erm, uhh, when the package was deprecated."` // want "JSON Schema description fields should not contain unescaped commas"
+}
+
+type Package struct {
+	Pkg string "golang"
+}
+
+type Module struct {
+	Mod     string `json:"securityUrgency,omitempty" yaml:"securityUrgency" jsonschema:"`
+	Version string `json:"securityUrgency,omitempty" yaml:"securityUrgency" jsonschema:`
+}

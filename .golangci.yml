@@ -1,0 +1,20 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - example
+
+  settings:
+    custom:
+      example:
+        # Path to the `.so` file of the plugin
+        path: bin/custom-linters-v2.5.0.so
+        # Only used for documentation purposes.
+        description: The description of the linter. Shows up when running `golangci-lint linters`.
+        # Only used for documentation purposes.
+        original-url: github.com/effective-security/golangci-linters
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

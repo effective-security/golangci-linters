@@ -1,0 +1,131 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+
+env:
+  EVENT_NUMBER: ${{ github.event.number }}
+  COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+  MIN_TESTCOV: 80
+  # A unique number for each workflow run within a repository.
+  # This number does not change if you re-run the workflow run.
+  RUN_ID: ${{ github.run_id }}
+  # A unique number for each run of a particular workflow in a repository.
+  # This number begins at 1 for the workflow's first run, and increments with each new run.
+  # This number does not change if you re-run the workflow run.
+  RUN_NUMBER: ${{ github.run_number }}
+  # A unique number for each attempt of a particular workflow run in a repository.
+  # This number begins at 1 for the workflow run's first attempt, and increments with each re-run.
+  RUN_ATTEMPT: ${{ github.run_attempt }}
+  PULL_NUMBER: ${{ github.event.pull_request.number }}
+
+jobs:
+  detect-noop:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.noop.outputs.should_skip }}
+      should_skip_go: ${{ steps.output_parsed_values.outputs.should_skip_go }}
+      paths_result: ${{ steps.noop.outputs.paths_result }}
+    steps:
+      - name: Detect No-op Changes
+        # https://github.com/fkirc/skip-duplicate-actions
+        id: noop
+        uses: fkirc/skip-duplicate-actions@v5.3.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          paths_ignore: '["**.md", "**.png", "**.jpg", "**/Documentation/**"]'
+          do_not_skip: '["push","schedule","release"]'
+          concurrent_skipping: false
+          paths_filter: |
+            go:
+              paths:
+                - '**/*.go'
+
+      - name: Output Parsed Values
+        id: output_parsed_values
+        run: |
+          echo "Parsing JSON output..."
+          should_skip_go="${{ fromJSON(steps.noop.outputs.paths_result).go.should_skip }}"
+          echo "should_skip_go=${should_skip_go}"
+          echo "should_skip_go=${should_skip_go}" >> $GITHUB_OUTPUT
+
+      - name: vars
+        run: |
+          echo "EVENT_NUMBER: ${{env.EVENT_NUMBER}}"
+          echo "COMMIT_SHA: ${{env.COMMIT_SHA}}"
+          echo "PULL_NUMBER: ${{env.PULL_NUMBER}}"
+          echo "RUN_ID: ${{env.RUN_ID}}"
+          echo "RUN_NUMBER: ${{env.RUN_NUMBER}}"
+          echo "RUN_ATTEMPT: ${{env.RUN_ATTEMPT}}"
+          echo "should_skip: ${{ steps.noop.outputs.should_skip }}"
+          echo "should_skip_go: ${{ steps.output_parsed_values.outputs.should_skip_go }}"
+          echo "paths_result: ${{ steps.noop.outputs.paths_result }}"
+
+  UnitTest:
+    runs-on: ubuntu-latest
+    needs:
+      - detect-noop
+    if: needs.detect-noop.outputs.should_skip != 'true' && always()
+    steps:
+      - name: Dependabot metadata
+        if: github.actor == 'dependabot[bot]'
+        id: dependabot
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Fetch History
+        run: git fetch --prune --unshallow
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Prepare
+        run: make vars tools
+
+      - name: Build
+        run: make -j build
+
+      - name: UnitTest
+        if: github.event_name == 'pull_request' && needs.detect-noop.outputs.should_skip_go != 'true'
+        run: make -j test lint
+
+      - name: Detect Version Changes
+        # https://github.com/fkirc/skip-duplicate-actions
+        id: version-changed
+        uses: fkirc/skip-duplicate-actions@v5.3.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          paths: '[".VERSION"]'
+          skip_after_successful_duplicate: false
+
+      - name: set-tag
+        run: |
+          VERSION=$(cat .VERSION).$(git rev-list --count HEAD)
+          echo "VERSION: ${VERSION}"
+          echo "DIST_VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "git tag ${VERSION}"
+          echo "should_skip: ${{steps.version-changed.outputs.should_skip}}"
+
+      - name: Create Tag
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.version-changed.outputs.should_skip != 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const {DIST_VERSION} = process.env          
+            github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/tags/${DIST_VERSION}`,
+                sha: context.sha
+            })
