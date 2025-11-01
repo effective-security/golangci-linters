@@ -19,7 +19,7 @@ clean:
 		${PROJ_BIN}
 
 tools:
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.5.0
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.6.0
 	go install github.com/effective-security/cov-report/cmd/cov-report@latest
 
 change_log:
@@ -33,4 +33,4 @@ build:
 	echo "*** Building linters"
 	CGO_ENABLED=1 go build -o ${PROJ_ROOT}/bin/custom-linters ./cmd/custom-linters
 	CGO_ENABLED=1 go build -o ${PROJ_ROOT}/bin/custom-linters-vet ./cmd/custom-linters-vet
-	CGO_ENABLED=1 go build -buildmode=plugin -o ${PROJ_ROOT}/bin/custom-linters-v2.5.0.so ./cmd/custom-linters
+	CGO_ENABLED=1 go build -buildmode=plugin -o ${PROJ_ROOT}/bin/custom-linters-v2.6.0.so ./cmd/custom-linters

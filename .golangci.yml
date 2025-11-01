@@ -9,7 +9,7 @@ linters:
     custom:
       example:
         # Path to the `.so` file of the plugin
-        path: bin/custom-linters-v2.5.0.so
+        path: bin/custom-linters-v2.6.0.so
         # Only used for documentation purposes.
         description: The description of the linter. Shows up when running `golangci-lint linters`.
         # Only used for documentation purposes.
