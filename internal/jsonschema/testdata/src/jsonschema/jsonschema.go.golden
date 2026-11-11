@@ -31,4 +31,5 @@ type Package struct {
 type Module struct {
 	Mod     string `json:"securityUrgency,omitempty" yaml:"securityUrgency" jsonschema:"`
 	Version string `json:"securityUrgency,omitempty" yaml:"securityUrgency" jsonschema:`
+	Ignored string `json:"ignored" jsonschema:"-"`
 }

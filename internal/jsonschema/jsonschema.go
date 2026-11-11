@@ -69,7 +69,8 @@ func noCommasRun(pass *analysis.Pass) (any, error) {
 			// Example tag: `jsonschema:"title=Deprecation Date,description=The exact date\\, when deprecated."`
 			tag := strings.Trim(field.Tag.Value, "`")
 			jsonschemaTag := parseTagValue(tag, "jsonschema")
-			if jsonschemaTag == "" {
+			// `jsonschema:"-"` excludes the field from the schema
+			if jsonschemaTag == "" || jsonschemaTag == "-" {
 				return true
 			}
 
