@@ -1,6 +1,6 @@
 include .project/gomod-project.mk
 BUILD_FLAGS=
-LINTER_VERSION ?= v2.14.0
+LINTER_VERSION ?= v2.15.0
 
 .PHONY: *
 
